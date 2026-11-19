@@ -1,0 +1,52 @@
+// VTU OOPs Concept: Class & Object + Encapsulation + Constructor Overloading
+// One Question object = one MCQ. All data is private.
+
+public class Question {
+    private String questionText;
+    private String option1;
+    private String option2;
+    private String option3;
+    private String option4;
+    private int correctOption; // 1 to 4
+    private int marks;
+
+    // Constructor 1: marks are given
+    public Question(String questionText, String option1, String option2,
+                    String option3, String option4, int correctOption, int marks) {
+        this.questionText = questionText;
+        this.option1 = option1;
+        this.option2 = option2;
+        this.option3 = option3;
+        this.option4 = option4;
+        this.correctOption = correctOption;
+        this.marks = marks;
+    }
+
+    // Constructor 2 (overloading): same name, fewer inputs, marks = 1 by default
+    public Question(String questionText, String option1, String option2,
+                    String option3, String option4, int correctOption) {
+        this(questionText, option1, option2, option3, option4, correctOption, 1);
+    }
+
+    public String getQuestionText() {
+        return questionText;
+    }
+
+    public int getMarks() {
+        return marks;
+    }
+
+    // Show the question on screen
+    public void displayQuestion() {
+        System.out.println(questionText);
+        System.out.println("1. " + option1);
+        System.out.println("2. " + option2);
+        System.out.println("3. " + option3);
+        System.out.println("4. " + option4);
+    }
+
+    // Check the student's answer. Returns true if correct.
+    public boolean isCorrect(int answer) {
+        return answer == correctOption;
+    }
+}
