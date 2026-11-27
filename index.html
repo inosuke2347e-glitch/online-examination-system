@@ -171,10 +171,6 @@ function logout() {
 function startExam(examId) {
   var qs = questionsForExam(examId);
   var order = qs.map(function (q) { return q.id; });
-  for (var i = order.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var t = order[i]; order[i] = order[j]; order[j] = t;
-  }
   var ex = examById(examId);
   timeLeft = ex.mins * 60;
   save({ screen: "exam", examId: examId, qOrder: order, qIndex: 0, answers: {}, selected: 0, msg: "" });
@@ -317,7 +313,7 @@ function render() {
       h += '<div class="oes-card"><div class="oes-row" style="justify-content:space-between"><h3 style="margin:0">' + esc(ex2.title) + '</h3>'
         + '<span>Time left: <span class="oes-timer" id="oes-timer">' + fmtTime(timeLeft) + '</span></span>'
         + '<button class="oes-btn secondary small" onclick="quitExam()">&larr; Back to Home</button></div>'
-        + '<p class="oes-muted">Question ' + (S.qIndex + 1) + ' of ' + S.qOrder.length + ' &mdash; questions are in random order, like the Java app.</p>'
+        + '<p class="oes-muted">Question ' + (S.qIndex + 1) + ' of ' + S.qOrder.length + '</p>'
         + '<div class="oes-err">' + esc(S.msg || "") + '</div>'
         + '<p style="font-size:15px"><b>Q' + (S.qIndex + 1) + '.</b> ' + esc(q.text) + '</p>';
       q.options.forEach(function (op, idx) {
