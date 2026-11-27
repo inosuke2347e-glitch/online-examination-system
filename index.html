@@ -1,0 +1,359 @@
+<style>
+  * { box-sizing: border-box; }
+  .oes { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; color: var(--hatch-widget-text); max-width: 760px; margin: 0 auto; padding: 4px; }
+  .oes-head { background: var(--hatch-widget-surface); border: 1px solid var(--hatch-widget-border); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
+  .oes-title { font-size: 20px; font-weight: 700; letter-spacing: .4px; }
+  .oes-sub { color: var(--hatch-widget-muted); font-size: 13px; margin-top: 2px; }
+  .oes-badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--hatch-widget-accent); color: var(--hatch-widget-accent); margin-top: 8px; }
+  .oes-card { background: var(--hatch-widget-surface); border: 1px solid var(--hatch-widget-border); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+  .oes-card h3 { margin: 0 0 10px 0; font-size: 16px; }
+  .oes-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .oes-btn { background: var(--hatch-widget-accent); color: var(--hatch-widget-on-accent); border: none; border-radius: 8px; padding: 9px 14px; font-size: 14px; cursor: pointer; }
+  .oes-btn.secondary { background: var(--hatch-widget-surface); color: var(--hatch-widget-text); border: 1px solid var(--hatch-widget-border); }
+  .oes-btn.small { padding: 5px 10px; font-size: 12px; }
+  .oes-btn:disabled { opacity: .5; cursor: default; }
+  .oes-input, .oes-select { width: 100%; padding: 9px 10px; border-radius: 8px; border: 1px solid var(--hatch-widget-border); background: var(--hatch-widget-bg); color: var(--hatch-widget-text); font-size: 14px; margin-bottom: 10px; }
+  .oes-label { font-size: 12px; color: var(--hatch-widget-muted); display: block; margin-bottom: 4px; }
+  .oes-err { color: #d64545; font-size: 13px; min-height: 18px; margin-bottom: 6px; }
+  .oes-ok { color: var(--hatch-widget-accent); font-size: 13px; }
+  .oes-muted { color: var(--hatch-widget-muted); font-size: 13px; }
+  .oes-exam { border: 1px solid var(--hatch-widget-border); border-radius: 10px; padding: 12px; margin-bottom: 10px; background: var(--hatch-widget-surface-muted); }
+  .oes-opt { display: block; width: 100%; text-align: left; padding: 10px 12px; margin-bottom: 8px; border-radius: 8px; border: 1px solid var(--hatch-widget-border); background: var(--hatch-widget-bg); color: var(--hatch-widget-text); font-size: 14px; cursor: pointer; }
+  .oes-opt.sel { border-color: var(--hatch-widget-accent); outline: 2px solid var(--hatch-widget-accent); }
+  .oes-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .oes-table th, .oes-table td { border-bottom: 1px solid var(--hatch-widget-border); padding: 6px 8px; text-align: left; vertical-align: top; }
+  .oes-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .oes-tab { padding: 7px 12px; border-radius: 999px; border: 1px solid var(--hatch-widget-border); background: var(--hatch-widget-surface); color: var(--hatch-widget-text); cursor: pointer; font-size: 13px; }
+  .oes-tab.on { background: var(--hatch-widget-accent); color: var(--hatch-widget-on-accent); border-color: var(--hatch-widget-accent); }
+  .oes-timer { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--hatch-widget-accent); }
+  .oes-big { font-size: 28px; font-weight: 700; }
+  .oes-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media (max-width: 560px) { .oes-grid2 { grid-template-columns: 1fr; } }
+</style>
+
+<div class="oes" id="oes-root"></div>
+
+<script>
+/* Standalone state bridge (replaces the Muse widget bridge when hosted).
+   In-memory state: every fresh page load starts at the login screen. */
+window.hatchWidget = {
+  _s: null,
+  getState: function(d){ if(!this._s){ this._s = JSON.parse(JSON.stringify(d)); } return this._s; },
+  setState: function(s){ this._s = s; }
+};
+</script>
+<script>
+var EXAMS = [
+  { id: 1, title: "Java OOPs Basics", subject: "SUB1", mins: 10 },
+  { id: 2, title: "Data Structures Basics", subject: "SUB2", mins: 10 }
+];
+var SUBJECTS = [
+  { id: "SUB1", name: "Java OOPs" },
+  { id: "SUB2", name: "Data Structures" }
+];
+var SEED_QUESTIONS = [
+  { id: 1, exam: 1, text: "Which of these is a pillar of OOP?", options: ["Encapsulation", "Compilation", "Debugging", "Linking"], correct: 1, marks: 1 },
+  { id: 2, exam: 1, text: "Which keyword is used to inherit a class in Java?", options: ["implements", "extends", "inherits", "super"], correct: 2, marks: 1 },
+  { id: 3, exam: 1, text: "Which of these hides data and shows only methods?", options: ["Polymorphism", "Inheritance", "Encapsulation", "Abstraction"], correct: 3, marks: 1 },
+  { id: 4, exam: 1, text: "How many objects can be created from one class?", options: ["Only one", "Only two", "As many as needed", "None"], correct: 3, marks: 1 },
+  { id: 5, exam: 1, text: "Which method is the starting point of a Java program?", options: ["start()", "main()", "run()", "init()"], correct: 2, marks: 1 },
+  { id: 6, exam: 1, text: "Which keyword is used to create an object in Java?", options: ["create", "new", "make", "object"], correct: 2, marks: 1 },
+  { id: 7, exam: 1, text: "Method overloading means:", options: ["Same method name with different parameters", "Same method name in a child class", "Two classes with the same name", "None of these"], correct: 1, marks: 1 },
+  { id: 8, exam: 1, text: "Which access modifier makes a member visible only inside its own class?", options: ["public", "private", "protected", "default"], correct: 2, marks: 1 },
+  { id: 9, exam: 1, text: "Which keyword is used by a class to use an interface?", options: ["extends", "implements", "interface", "abstract"], correct: 2, marks: 1 },
+  { id: 10, exam: 1, text: "Which of these is NOT a pillar of OOP?", options: ["Encapsulation", "Inheritance", "Polymorphism", "Compilation"], correct: 4, marks: 1 },
+  { id: 11, exam: 2, text: "Which data structure works on LIFO (Last In First Out)?", options: ["Queue", "Stack", "Linked List", "Tree"], correct: 2, marks: 1 },
+  { id: 12, exam: 2, text: "Which data structure works on FIFO (First In First Out)?", options: ["Queue", "Stack", "Tree", "Graph"], correct: 1, marks: 1 },
+  { id: 13, exam: 2, text: "In a stack, insertion of an element is called:", options: ["Pop", "Delete", "Push", "Peek"], correct: 3, marks: 1 },
+  { id: 14, exam: 2, text: "Which of these is a linear data structure?", options: ["Tree", "Graph", "Array", "Binary Tree"], correct: 3, marks: 1 },
+  { id: 15, exam: 2, text: "Time needed to access an array element by its index is:", options: ["O(n)", "O(log n)", "O(n log n)", "O(1)"], correct: 4, marks: 1 }
+];
+var SEED_STUDENTS = [
+  { id: "S101", name: "Shubam", password: "student123", dept: "AI & DS" },
+  { id: "S102", name: "Rahul", password: "rahul123", dept: "AI & DS" }
+];
+
+var DEFAULTS = {
+  screen: "login",
+  loginRole: "student",
+  msg: "",
+  userId: "", userName: "",
+  examId: 0, qOrder: [], qIndex: 0, answers: {}, selected: 0,
+  lastResult: null,
+  results: [],
+  students: SEED_STUDENTS,
+  questions: SEED_QUESTIONS,
+  adminTab: "students",
+  qSearch: ""
+};
+
+var S = window.hatchWidget.getState(DEFAULTS);
+var timerId = null;
+var timeLeft = 0;
+
+function save(patch) {
+  S = Object.assign({}, S, patch);
+  window.hatchWidget.setState(S);
+  render();
+}
+window.addEventListener("hatch-widget-state", function (e) {
+  S = e.detail.state;
+  render();
+});
+
+function esc(t) {
+  return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+function examById(id) { for (var i = 0; i < EXAMS.length; i++) if (EXAMS[i].id === id) return EXAMS[i]; return null; }
+function questionsForExam(id) { return S.questions.filter(function (q) { return q.exam === id; }); }
+function fmtTime(sec) { var m = Math.floor(sec / 60), s = sec % 60; return m + ":" + (s < 10 ? "0" : "") + s; }
+
+function doLogin() {
+  var id = document.getElementById("login-id").value.trim();
+  var pw = document.getElementById("login-pw").value;
+  if (S.loginRole === "admin") {
+    if (id === "admin" && pw === "admin123") {
+      save({ screen: "admin", userId: "admin", userName: "Avinash", msg: "" });
+    } else {
+      save({ msg: "Wrong admin ID or password." });
+    }
+    return;
+  }
+  var found = null;
+  for (var i = 0; i < S.students.length; i++) {
+    if (S.students[i].id === id && S.students[i].password === pw) found = S.students[i];
+  }
+  if (found) {
+    save({ screen: "student", userId: found.id, userName: found.name, msg: "" });
+  } else {
+    save({ msg: "Wrong student ID or password." });
+  }
+}
+function logout() {
+  stopTimer();
+  save({ screen: "login", userId: "", userName: "", msg: "", examId: 0, lastResult: null });
+}
+
+function startExam(examId) {
+  var qs = questionsForExam(examId);
+  var order = qs.map(function (q) { return q.id; });
+  for (var i = order.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = order[i]; order[i] = order[j]; order[j] = t;
+  }
+  var ex = examById(examId);
+  timeLeft = ex.mins * 60;
+  save({ screen: "exam", examId: examId, qOrder: order, qIndex: 0, answers: {}, selected: 0, msg: "" });
+  startTimer();
+}
+function startTimer() {
+  stopTimer();
+  timerId = setInterval(function () {
+    timeLeft--;
+    var el = document.getElementById("oes-timer");
+    if (el) el.textContent = fmtTime(Math.max(0, timeLeft));
+    if (timeLeft <= 0) finishExam(true);
+  }, 1000);
+}
+function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
+function pickOption(n) { save({ selected: n }); }
+function nextQuestion() {
+  if (!S.selected) { save({ msg: "Select an option first." }); return; }
+  var qid = S.qOrder[S.qIndex];
+  var answers = Object.assign({}, S.answers);
+  answers[qid] = S.selected;
+  if (S.qIndex + 1 >= S.qOrder.length) {
+    finishExam(false, answers);
+  } else {
+    save({ answers: answers, qIndex: S.qIndex + 1, selected: 0, msg: "" });
+  }
+}
+function finishExam(auto, finalAnswers) {
+  stopTimer();
+  var answers = finalAnswers || S.answers;
+  var score = 0, total = 0;
+  S.qOrder.forEach(function (qid) {
+    var q = null;
+    for (var i = 0; i < S.questions.length; i++) if (S.questions[i].id === qid) q = S.questions[i];
+    if (q) { total += q.marks; if (answers[qid] === q.correct) score += q.marks; }
+  });
+  var ex = examById(S.examId);
+  var pct = total === 0 ? 0 : Math.round((score * 1000) / total) / 10;
+  var res = { studentId: S.userId, studentName: S.userName, examTitle: ex.title, score: score, total: total, pct: pct, auto: !!auto };
+  var results = S.results.concat([res]);
+  save({ screen: "result", lastResult: res, results: results, msg: "" });
+}
+
+function deleteQuestion(id) {
+  save({ questions: S.questions.filter(function (q) { return q.id !== id; }) });
+}
+function searchQuestions() {
+  save({ qSearch: document.getElementById("q-search").value.trim() });
+}
+function addQuestion() {
+  var examId = parseInt(document.getElementById("aq-exam").value, 10);
+  var text = document.getElementById("aq-text").value.trim();
+  var o1 = document.getElementById("aq-o1").value.trim();
+  var o2 = document.getElementById("aq-o2").value.trim();
+  var o3 = document.getElementById("aq-o3").value.trim();
+  var o4 = document.getElementById("aq-o4").value.trim();
+  var correct = parseInt(document.getElementById("aq-correct").value, 10);
+  if (!text || !o1 || !o2 || !o3 || !o4) { save({ msg: "Fill the question and all 4 options." }); return; }
+  var maxId = 0;
+  S.questions.forEach(function (q) { if (q.id > maxId) maxId = q.id; });
+  var nq = { id: maxId + 1, exam: examId, text: text, options: [o1, o2, o3, o4], correct: correct, marks: 1 };
+  save({ questions: S.questions.concat([nq]), msg: "Question added with ID " + nq.id + ".", adminTab: "questions" });
+}
+function addStudent() {
+  var id = document.getElementById("as-id").value.trim();
+  var name = document.getElementById("as-name").value.trim();
+  var pw = document.getElementById("as-pw").value;
+  var dept = document.getElementById("as-dept").value.trim() || "AI & DS";
+  if (!id || !name || !pw) { save({ msg: "Fill student ID, name and password." }); return; }
+  for (var i = 0; i < S.students.length; i++) {
+    if (S.students[i].id === id) { save({ msg: "A student with this ID already exists." }); return; }
+  }
+  save({ students: S.students.concat([{ id: id, name: name, password: pw, dept: dept }]), msg: "Student added." });
+}
+</script>
+
+<script>
+function render() {
+  var root = document.getElementById("oes-root");
+  var h = "";
+  h += '<div class="oes-head"><div class="oes-title">ONLINE EXAMINATION SYSTEM</div>'
+     + '<div class="oes-sub">Avinash, Shubam and MD Yasir | 3rd Sem, AI &amp; DS | Java + MySQL + JDBC</div>'
+     + '<span class="oes-badge">Web demo of the Java project &mdash; same data, same flow</span></div>';
+
+  if (S.screen === "login") {
+    h += '<div class="oes-card"><h3>' + (S.loginRole === "admin" ? "Admin Login" : "Student Login") + '</h3>'
+      + '<div class="oes-row" style="margin-bottom:12px">'
+      + '<button class="oes-btn' + (S.loginRole === "student" ? "" : " secondary") + '" onclick="save({loginRole:\'student\',msg:\'\'})">Student</button>'
+      + '<button class="oes-btn' + (S.loginRole === "admin" ? "" : " secondary") + '" onclick="save({loginRole:\'admin\',msg:\'\'})">Admin</button></div>'
+      + '<div class="oes-err">' + esc(S.msg || "") + '</div>'
+      + '<label class="oes-label">' + (S.loginRole === "admin" ? "Admin ID" : "Student ID") + '</label>'
+      + '<input class="oes-input" id="login-id" value="' + (S.loginRole === "admin" ? "admin" : "S101") + '">'
+      + '<label class="oes-label">Password</label>'
+      + '<input class="oes-input" id="login-pw" type="password" value="' + (S.loginRole === "admin" ? "admin123" : "student123") + '">'
+      + '<button class="oes-btn" onclick="doLogin()">Login</button>'
+      + '<p class="oes-muted" style="margin-top:10px">Demo logins &mdash; Student: S101 / student123 (also S102 / rahul123). Admin: admin / admin123.</p></div>';
+  }
+
+  if (S.screen === "student") {
+    h += '<div class="oes-card"><div class="oes-row" style="justify-content:space-between"><h3 style="margin:0">Welcome, ' + esc(S.userName) + ' (Student)</h3>'
+      + '<button class="oes-btn secondary small" onclick="logout()">Logout</button></div></div>';
+    h += '<div class="oes-card"><h3>Available Exams</h3>';
+    EXAMS.forEach(function (ex) {
+      var n = questionsForExam(ex.id).length;
+      h += '<div class="oes-exam"><b>' + ex.id + '. ' + esc(ex.title) + '</b><br>'
+        + '<span class="oes-muted">Subject: ' + ex.subject + ' | Time: ' + ex.mins + ' minutes | Questions: ' + n + '</span><br>'
+        + '<button class="oes-btn" style="margin-top:8px" onclick="startExam(' + ex.id + ')"' + (n === 0 ? " disabled" : "") + '>Attend Exam</button></div>';
+    });
+    h += '</div>';
+    var mine = S.results.filter(function (r) { return r.studentId === S.userId; });
+    h += '<div class="oes-card"><h3>My Results</h3>';
+    if (mine.length === 0) h += '<p class="oes-muted">No results yet. Attend an exam first.</p>';
+    else {
+      h += '<table class="oes-table"><tr><th>Exam</th><th>Score</th><th>%</th><th>Status</th></tr>';
+      mine.forEach(function (r) {
+        h += '<tr><td>' + esc(r.examTitle) + '</td><td>' + r.score + '/' + r.total + '</td><td>' + r.pct + '%</td><td>' + (r.pct >= 40 ? "Pass" : "Fail") + '</td></tr>';
+      });
+      h += '</table>';
+    }
+    h += '</div>';
+  }
+
+  if (S.screen === "exam") {
+    var qid = S.qOrder[S.qIndex];
+    var q = null;
+    for (var i = 0; i < S.questions.length; i++) if (S.questions[i].id === qid) q = S.questions[i];
+    var ex2 = examById(S.examId);
+    if (q) {
+      h += '<div class="oes-card"><div class="oes-row" style="justify-content:space-between"><h3 style="margin:0">' + esc(ex2.title) + '</h3>'
+        + '<span>Time left: <span class="oes-timer" id="oes-timer">' + fmtTime(timeLeft) + '</span></span></div>'
+        + '<p class="oes-muted">Question ' + (S.qIndex + 1) + ' of ' + S.qOrder.length + ' &mdash; questions are in random order, like the Java app.</p>'
+        + '<div class="oes-err">' + esc(S.msg || "") + '</div>'
+        + '<p style="font-size:15px"><b>Q' + (S.qIndex + 1) + '.</b> ' + esc(q.text) + '</p>';
+      q.options.forEach(function (op, idx) {
+        var n = idx + 1;
+        h += '<button class="oes-opt' + (S.selected === n ? " sel" : "") + '" onclick="pickOption(' + n + ')">' + n + '. ' + esc(op) + '</button>';
+      });
+      h += '<button class="oes-btn" onclick="nextQuestion()">' + (S.qIndex + 1 >= S.qOrder.length ? "Submit Exam" : "Next Question") + '</button></div>';
+    }
+  }
+
+  if (S.screen === "result" && S.lastResult) {
+    var r = S.lastResult;
+    h += '<div class="oes-card"><h3>Result' + (r.auto ? " (time over &mdash; auto submitted)" : "") + '</h3>'
+      + '<p class="oes-muted">Student: ' + esc(r.studentName) + ' (' + esc(r.studentId) + ') | Exam: ' + esc(r.examTitle) + '</p>'
+      + '<div class="oes-big">' + r.score + ' / ' + r.total + '</div>'
+      + '<p>Percentage: <b>' + r.pct + '%</b> &mdash; Status: <b>' + (r.pct >= 40 ? "Pass" : "Fail") + '</b></p>'
+      + '<p class="oes-ok">Result saved. The admin can see it in View All Results.</p>'
+      + '<button class="oes-btn" onclick="save({screen:\'student\',lastResult:null,msg:\'\'})">Back to Student Home</button></div>';
+  }
+
+  if (S.screen === "admin") {
+    h += '<div class="oes-card"><div class="oes-row" style="justify-content:space-between"><h3 style="margin:0">Admin Panel &mdash; ' + esc(S.userName) + '</h3>'
+      + '<button class="oes-btn secondary small" onclick="logout()">Logout</button></div>'
+      + '<div class="oes-err" style="margin-top:8px">' + esc(S.msg || "") + '</div>'
+      + '<div class="oes-tabs">'
+      + ["students", "subjects", "questions", "exams", "results"].map(function (t) {
+          return '<button class="oes-tab' + (S.adminTab === t ? " on" : "") + '" onclick="save({adminTab:\'' + t + '\',msg:\'\'})">' + t.charAt(0).toUpperCase() + t.slice(1) + '</button>';
+        }).join("")
+      + '</div>';
+
+    if (S.adminTab === "students") {
+      h += '<table class="oes-table"><tr><th>ID</th><th>Name</th><th>Department</th></tr>';
+      S.students.forEach(function (st) { h += '<tr><td>' + esc(st.id) + '</td><td>' + esc(st.name) + '</td><td>' + esc(st.dept) + '</td></tr>'; });
+      h += '</table><h3 style="margin-top:14px">Add Student</h3>'
+        + '<div class="oes-grid2"><input class="oes-input" id="as-id" placeholder="Student ID (e.g. S103)"><input class="oes-input" id="as-name" placeholder="Name"></div>'
+        + '<div class="oes-grid2"><input class="oes-input" id="as-pw" placeholder="Password"><input class="oes-input" id="as-dept" placeholder="Department (AI & DS)"></div>'
+        + '<button class="oes-btn" onclick="addStudent()">Add Student</button>';
+    }
+    if (S.adminTab === "subjects") {
+      h += '<table class="oes-table"><tr><th>ID</th><th>Subject</th></tr>';
+      SUBJECTS.forEach(function (sb) { h += '<tr><td>' + sb.id + '</td><td>' + esc(sb.name) + '</td></tr>'; });
+      h += '</table>';
+    }
+    if (S.adminTab === "questions") {
+      h += '<div class="oes-row"><input class="oes-input" id="q-search" placeholder="Search by question ID" style="flex:1;margin-bottom:0" value="' + esc(S.qSearch || "") + '">'
+        + '<button class="oes-btn secondary" onclick="searchQuestions()">Search</button></div>'
+        + '<table class="oes-table" style="margin-top:10px"><tr><th>ID</th><th>Exam</th><th>Question</th><th>Correct</th><th></th></tr>';
+      S.questions.forEach(function (q) {
+        if (S.qSearch && String(q.id) !== S.qSearch) return;
+        h += '<tr><td>' + q.id + '</td><td>' + q.exam + '</td><td>' + esc(q.text) + '</td><td>' + q.correct + '</td>'
+          + '<td><button class="oes-btn secondary small" onclick="deleteQuestion(' + q.id + ')">Delete</button></td></tr>';
+      });
+      h += '</table><h3 style="margin-top:14px">Add Question</h3>'
+        + '<label class="oes-label">Exam</label><select class="oes-select" id="aq-exam">'
+        + EXAMS.map(function (e) { return '<option value="' + e.id + '">' + e.id + '. ' + esc(e.title) + '</option>'; }).join("") + '</select>'
+        + '<input class="oes-input" id="aq-text" placeholder="Question">'
+        + '<div class="oes-grid2"><input class="oes-input" id="aq-o1" placeholder="Option 1"><input class="oes-input" id="aq-o2" placeholder="Option 2"></div>'
+        + '<div class="oes-grid2"><input class="oes-input" id="aq-o3" placeholder="Option 3"><input class="oes-input" id="aq-o4" placeholder="Option 4"></div>'
+        + '<label class="oes-label">Correct option</label><select class="oes-select" id="aq-correct"><option>1</option><option>2</option><option>3</option><option>4</option></select>'
+        + '<button class="oes-btn" onclick="addQuestion()">Add Question</button>';
+    }
+    if (S.adminTab === "exams") {
+      h += '<table class="oes-table"><tr><th>ID</th><th>Title</th><th>Subject</th><th>Time</th><th>Questions</th></tr>';
+      EXAMS.forEach(function (e) {
+        h += '<tr><td>' + e.id + '</td><td>' + esc(e.title) + '</td><td>' + e.subject + '</td><td>' + e.mins + ' min</td><td>' + questionsForExam(e.id).length + '</td></tr>';
+      });
+      h += '</table>';
+    }
+    if (S.adminTab === "results") {
+      if (S.results.length === 0) h += '<p class="oes-muted">No results yet. A student must attend an exam first (try the student login).</p>';
+      else {
+        h += '<table class="oes-table"><tr><th>Student</th><th>Exam</th><th>Score</th><th>%</th><th>Status</th></tr>';
+        S.results.forEach(function (r) {
+          h += '<tr><td>' + esc(r.studentName) + ' (' + esc(r.studentId) + ')</td><td>' + esc(r.examTitle) + '</td><td>' + r.score + '/' + r.total + '</td><td>' + r.pct + '%</td><td>' + (r.pct >= 40 ? "Pass" : "Fail") + '</td></tr>';
+        });
+        h += '</table>';
+      }
+    }
+    h += '</div>';
+  }
+
+  root.innerHTML = h;
+}
+render();
+</script>
