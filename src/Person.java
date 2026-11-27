@@ -1,5 +1,5 @@
 // Online Examination System - Java Mini Project
-// Students: Avinash and Shubam, 3rd Semester, AI & DS
+// Students: Avinash, Shubam and MD Yasir, 3rd Semester, AI & DS
 // VTU OOPs Concept: Inheritance (base class) + Encapsulation + Abstraction
 // This is the base class. Student and Admin reuse it (inheritance).
 

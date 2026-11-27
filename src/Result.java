@@ -2,20 +2,37 @@
 // One Result object stores one student's score for one exam.
 
 public class Result {
+    private String studentId;
     private String studentName;
+    private int examId;
     private String examTitle;
     private int score;
     private int totalMarks;
 
-    public Result(String studentName, String examTitle, int score, int totalMarks) {
+    public Result(String studentId, String studentName, int examId,
+                  String examTitle, int score, int totalMarks) {
+        this.studentId = studentId;
         this.studentName = studentName;
+        this.examId = examId;
         this.examTitle = examTitle;
         this.score = score;
         this.totalMarks = totalMarks;
     }
 
+    public String getStudentId() {
+        return studentId;
+    }
+
     public String getStudentName() {
         return studentName;
+    }
+
+    public int getExamId() {
+        return examId;
+    }
+
+    public String getExamTitle() {
+        return examTitle;
     }
 
     public int getScore() {
@@ -36,7 +53,7 @@ public class Result {
 
     public void displayResult() {
         System.out.println("----- Result -----");
-        System.out.println("Student: " + studentName);
+        System.out.println("Student: " + studentName + " (" + studentId + ")");
         System.out.println("Exam: " + examTitle);
         System.out.println("Score: " + score + " / " + totalMarks);
         System.out.println("Percentage: " + calculatePercentage() + "%");
