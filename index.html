@@ -202,6 +202,17 @@ function nextQuestion() {
     save({ answers: answers, qIndex: S.qIndex + 1, selected: 0, msg: "" });
   }
 }
+function prevQuestion() {
+  if (S.qIndex <= 0) return;
+  var answers = Object.assign({}, S.answers);
+  if (S.selected) answers[S.qOrder[S.qIndex]] = S.selected;
+  var pqid = S.qOrder[S.qIndex - 1];
+  save({ answers: answers, qIndex: S.qIndex - 1, selected: answers[pqid] || 0, msg: "" });
+}
+function quitExam() {
+  stopTimer();
+  save({ screen: "student", examId: 0, qOrder: [], qIndex: 0, answers: {}, selected: 0, msg: "" });
+}
 function finishExam(auto, finalAnswers) {
   stopTimer();
   var answers = finalAnswers || S.answers;
@@ -304,7 +315,8 @@ function render() {
     var ex2 = examById(S.examId);
     if (q) {
       h += '<div class="oes-card"><div class="oes-row" style="justify-content:space-between"><h3 style="margin:0">' + esc(ex2.title) + '</h3>'
-        + '<span>Time left: <span class="oes-timer" id="oes-timer">' + fmtTime(timeLeft) + '</span></span></div>'
+        + '<span>Time left: <span class="oes-timer" id="oes-timer">' + fmtTime(timeLeft) + '</span></span>'
+        + '<button class="oes-btn secondary small" onclick="quitExam()">&larr; Back to Home</button></div>'
         + '<p class="oes-muted">Question ' + (S.qIndex + 1) + ' of ' + S.qOrder.length + ' &mdash; questions are in random order, like the Java app.</p>'
         + '<div class="oes-err">' + esc(S.msg || "") + '</div>'
         + '<p style="font-size:15px"><b>Q' + (S.qIndex + 1) + '.</b> ' + esc(q.text) + '</p>';
@@ -312,7 +324,9 @@ function render() {
         var n = idx + 1;
         h += '<button class="oes-opt' + (S.selected === n ? " sel" : "") + '" onclick="pickOption(' + n + ')">' + n + '. ' + esc(op) + '</button>';
       });
-      h += '<button class="oes-btn" onclick="nextQuestion()">' + (S.qIndex + 1 >= S.qOrder.length ? "Submit Exam" : "Next Question") + '</button></div>';
+      h += '<div class="oes-row" style="justify-content:space-between">'
+        + (S.qIndex > 0 ? '<button class="oes-btn secondary" onclick="prevQuestion()">&larr; Previous</button>' : '<span></span>')
+        + '<button class="oes-btn" onclick="nextQuestion()">' + (S.qIndex + 1 >= S.qOrder.length ? "Submit Exam" : "Next Question") + '</button></div></div>';
     }
   }
 
